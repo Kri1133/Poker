@@ -60,16 +60,59 @@ void dealingCards(std::vector<Player>& players, vector<vector<string>>& deck)
 
 bool checkCombinations(vector<vector<string>>& comCards, vector<vector<string>> hand)
 {
-	bool goodHand = false;
-	/*hand.insert(hand.end(), comCards.begin(), comCards.end());
-	std::sort(hand.begin(), hand.end());
-	int counter = 0;
-	do
+	// A copy vector of the hand is required as the community cards will be added to the hand
+	hand.insert(hand.end(), comCards.begin(), comCards.end());
+	if (isRoyalFlush(hand))
 	{
-		checkPermutation();
-	} while (std::next_permutation(hand.begin(), hand.end()));
-	std::cout << counter;*/
-	return goodHand;
+		std::cout << "Royal Flush!" << endl;
+		return true;
+	}
+	else if (isStraightFlush(hand))
+	{
+		std::cout << "Straight Flush!" << endl;
+		return true;
+	}
+	else if (isFourOfaKind(hand))
+	{
+		std::cout << "Four of a Kind!" << endl;
+		return true;
+	}
+	else if (isFullHouse(hand))
+	{
+		std::cout << "Full House!" << endl;
+		return true;
+	}
+	else if (isFlush(hand))
+	{
+		std::cout << "Flush!" << endl;
+		return true;
+	}
+	else if (isStraight(hand))
+	{
+		std::cout << "Straight!" << endl;
+		return true;
+	}
+	//else if (isThreeOfaKind(hand))
+	//{
+	//	std::cout << "Three of a Kind!" << endl;
+	//	return true;
+	//}
+	//else if (isTwoPair(hand))
+	//{
+	//	std::cout << "Two Pair!" << endl;
+	//	return true;
+	//}
+	//else if (isPair(hand))
+	//{
+	//	std::cout << "Pair!" << endl;
+	//	return true;
+	//}
+	//else
+	//{
+	//	std::cout << "High Card!" << endl;
+	//	return false;
+	//}
+
 }
 
 
@@ -131,7 +174,10 @@ int main()
 	for (int i = 0; i < PLAYER_COUNT - 1; i++)
 	{
 		vector<vector<string>> cardsToPass = players[i].getHand();
-		checkCombinations(communityCards, cardsToPass);
+		vector<vector<string>> test = { {"5", "Hearts" }, {"6", "Spades"},
+			{"2", "Spades"}, {"3", "Diamonds"}, {"4", "Spades"} };
+
+		checkCombinations(communityCards, test);
 		// TODO add check cards method
 	}
 
