@@ -1,0 +1,15 @@
+#pragma once
+#include <iostream>
+#include <vector>
+#include <string>
+
+bool isRoyalFlush(std::vector<std::vector<std::string>>& hand);
+bool isStraightFlush(std::vector<std::vector<std::string>>& hand);
+bool isFourOfaKind(std::vector<std::vector<std::string>>& hand);
+//bool isFullHouse(std::vector<std::vector<std::string>>& hand);
+//bool isFlush(std::vector<std::vector<std::string>>& hand);
+//bool isStraight(std::vector<std::vector<std::string>>& hand);
+//bool isThreeOfaKind(std::vector<std::vector<std::string>>& hand);
+//bool isTwoPair(std::vector<std::vector<std::string>>& hand);
+//bool isPair(std::vector<std::vector<std::string>>& hand);
+//bool isHighCard(std::vector<std::vector<std::string>>& hand);
