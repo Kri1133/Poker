@@ -8,6 +8,11 @@ void Player::setName()
     std::getline(std::cin, name);
 }
 
+void Player::setAction()
+{
+	std::getline(std::cin, action);
+}
+
 int Player::getNumber()
 {
     return playerNumber;

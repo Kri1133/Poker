@@ -8,9 +8,9 @@ using namespace std;
 
 const int PLAYER_COUNT = 4;
 
- /*Player count must not be > 10
- Otherwise bad things will happen
- Or so I was told*/
+/*Player count must not be > 10
+Otherwise bad things will happen
+Or so I was told*/
 
 std::vector<std::vector<string>> shuffleCards(string Deck[52][2])
 {
@@ -62,15 +62,21 @@ bool checkCombinations(vector<vector<string>>& comCards, vector<vector<string>> 
 {
 	// A copy vector of the hand is required as the community cards will be added to the hand
 	hand.insert(hand.end(), comCards.begin(), comCards.end());
-	if (isRoyalFlush(hand))
+	if (isFlush(hand))
 	{
-		std::cout << "Royal Flush!" << endl;
-		return true;
-	}
-	else if (isStraightFlush(hand))
-	{
-		std::cout << "Straight Flush!" << endl;
-		return true;
+		
+		if (isRoyalFlush(hand)) {
+			std::cout << "Royal Flush!" << endl;
+			return true;
+		}
+		else if (isStraight(hand)) {
+			std::cout << "Straight Flush!" << endl;
+			return true;
+		}
+		else {
+			std::cout << "Flush!" << endl;
+			return true;
+		}
 	}
 	else if (isFourOfaKind(hand))
 	{
@@ -82,39 +88,32 @@ bool checkCombinations(vector<vector<string>>& comCards, vector<vector<string>> 
 		std::cout << "Full House!" << endl;
 		return true;
 	}
-	else if (isFlush(hand))
-	{
-		std::cout << "Flush!" << endl;
-		return true;
-	}
 	else if (isStraight(hand))
 	{
 		std::cout << "Straight!" << endl;
 		return true;
 	}
-	//else if (isThreeOfaKind(hand))
-	//{
-	//	std::cout << "Three of a Kind!" << endl;
-	//	return true;
-	//}
-	//else if (isTwoPair(hand))
-	//{
-	//	std::cout << "Two Pair!" << endl;
-	//	return true;
-	//}
-	//else if (isPair(hand))
-	//{
-	//	std::cout << "Pair!" << endl;
-	//	return true;
-	//}
-	//else
-	//{
-	//	std::cout << "High Card!" << endl;
-	//	return false;
-	//}
-
+	else if (isThreeOfaKind(hand)) // isThreeOfaKind must be checked after isFullHouse
+	{
+		std::cout << "Three of a Kind!" << endl;
+		return true;
+	}
+	else if (isPair(hand) == 1)
+	{
+		std::cout << "Pair!" << endl;
+		return true;
+	}
+	else if (isPair(hand) == 2)
+	{
+		std::cout << "Two Pair!" << endl;
+		return true;
+	}
+	else
+	{
+		std::cout << "High Card!" << endl;
+		return true;
+	}
 }
-
 
 int main()
 {
@@ -174,17 +173,30 @@ int main()
 	for (int i = 0; i < PLAYER_COUNT - 1; i++)
 	{
 		vector<vector<string>> cardsToPass = players[i].getHand();
-		vector<vector<string>> test = { {"5", "Hearts" }, {"6", "Spades"},
-			{"2", "Spades"}, {"3", "Diamonds"}, {"4", "Spades"} };
+		/*vector<vector<string>> test = { {"2", "Hearts" }, {"10", "Diamonds"} };
+		communityCards = { {"3", "Spades" }, {"5", "Clubs" }, {"8", "Hearts" } };*/
+		// Above used for testing purposes
+		checkCombinations(communityCards, cardsToPass);
+		players[i].setAction();
 
-		checkCombinations(communityCards, test);
-		// TODO add check cards method
+		// Action step must be added for the bots
 	}
 
 	// Dealing the turn
 	communityCards.push_back(shuffledDeck[0]);
 
 	shuffledDeck.erase(shuffledDeck.begin());
+
+	for (int i = 0; i < PLAYER_COUNT - 1; i++)
+	{
+		vector<vector<string>> cardsToPass = players[i].getHand();
+		/*vector<vector<string>> test = { {"2", "Hearts" }, {"10", "Diamonds"} };
+		communityCards = { {"3", "Spades" }, {"5", "Clubs" }, {"8", "Hearts" } };*/
+		// Above used for testing purposes
+		if (checkCombinations(communityCards, cardsToPass)) {
+			// Can be used to make a bet
+		}
+	}
 
 	// Dealing the river
 	communityCards.push_back(shuffledDeck[0]);
