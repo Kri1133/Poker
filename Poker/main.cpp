@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <ctime>
+#include <memory>
 #include "player.h"
 #include "combination_check.h"
 using namespace std;
@@ -46,14 +47,14 @@ std::vector<std::vector<string>> shuffleCards(string Deck[52][2])
 	return shuffledDeck;
 }
 
-void dealingCards(std::vector<Player>& players, vector<vector<string>>& deck)
+void dealingCards(std::vector<std::unique_ptr<Player>>& players, vector<vector<string>>& deck)
 {
 	int cardIndex = 0;
 	for (int i = 0; i < PLAYER_COUNT; i++)
 	{
-		players[i].addCardToHand(deck[cardIndex]);
+		players[i]->addCardToHand(deck[cardIndex]);
 		cardIndex++;
-		players[i].addCardToHand(deck[cardIndex]);
+		players[i]->addCardToHand(deck[cardIndex]);
 		cardIndex++;
 	}
 }
@@ -64,7 +65,7 @@ bool checkCombinations(vector<vector<string>>& comCards, vector<vector<string>> 
 	hand.insert(hand.end(), comCards.begin(), comCards.end());
 	if (isFlush(hand))
 	{
-		
+
 		if (isRoyalFlush(hand)) {
 			std::cout << "Royal Flush!" << endl;
 			return true;
@@ -135,29 +136,34 @@ int main()
 		}
 	}
 
-	vector<Player> players(PLAYER_COUNT);
-	for (int i = 0; i < PLAYER_COUNT; i++)
-	{
-		players[i].setNumber(i + 1);
-		players[i].setName();
+	Player you;
+	vector<botPlayer> bots(PLAYER_COUNT - 1);
+	vector<unique_ptr<Player>> players; // Using smart pointers to delete the pointer automatically at the end
+	string botNames[3] = { "Amigo 1", "Mikey Mouse", "Darth Vader" };
+
+	players.push_back(std::make_unique<Player>()); // Human player
+	for (int i = 0; i < PLAYER_COUNT - 1; i++) {
+		players.push_back(std::make_unique<botPlayer>());
+	}
+
+	players[0]->setName();
+	for (int i = 1; i < PLAYER_COUNT; i++) {
+		botPlayer* bot = dynamic_cast<botPlayer*>(players[i].get());
+		if (bot) {
+			bot->setNumber(i + 1);
+			bot->setBotName(botNames[i - 1]);
+		}
 	}
 
 	std::vector<std::vector<string>> shuffledDeck = shuffleCards(Deck);
 
 	dealingCards(players, shuffledDeck);
 
-	for (int i = 0; i < PLAYER_COUNT; i++)
-	{
-		std::cout << players[i].getName() << ": " << endl;
-		std::vector<std::vector<std::string>> hand = players[i].getHand();
-		for (int j = 0; j < 2; j++)
-		{
-			std::cout << hand[j][0] << " of " << hand[j][1] << endl;
-		}
-	}
-
 	shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2 * PLAYER_COUNT); // remove used cards
 
+	for (auto i : players[0]->getHand()) {
+		std::cout << i[0] << " of " << i[1] << std::endl;
+	}
 	std::vector<std::vector<string>> communityCards;
 
 	// Dealing the flop
@@ -168,16 +174,18 @@ int main()
 
 	shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 3);
 
-	double bet = 0;
+	for (int i = 0; i < communityCards.size(); i++) {
+		std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
+	}
 
 	for (int i = 0; i < PLAYER_COUNT - 1; i++)
 	{
-		vector<vector<string>> cardsToPass = players[i].getHand();
+		vector<vector<string>> cardsToPass = players[i]->getHand();
 		/*vector<vector<string>> test = { {"2", "Hearts" }, {"10", "Diamonds"} };
 		communityCards = { {"3", "Spades" }, {"5", "Clubs" }, {"8", "Hearts" } };*/
 		// Above used for testing purposes
 		checkCombinations(communityCards, cardsToPass);
-		players[i].setAction();
+		players[i]->chooseAction();
 
 		// Action step must be added for the bots
 	}
@@ -187,12 +195,13 @@ int main()
 
 	shuffledDeck.erase(shuffledDeck.begin());
 
+	for (int i = 0; i < communityCards.size(); i++) {
+		std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
+	}
+
 	for (int i = 0; i < PLAYER_COUNT - 1; i++)
 	{
-		vector<vector<string>> cardsToPass = players[i].getHand();
-		/*vector<vector<string>> test = { {"2", "Hearts" }, {"10", "Diamonds"} };
-		communityCards = { {"3", "Spades" }, {"5", "Clubs" }, {"8", "Hearts" } };*/
-		// Above used for testing purposes
+		vector<vector<string>> cardsToPass = players[i]->getHand();
 		if (checkCombinations(communityCards, cardsToPass)) {
 			// Can be used to make a bet
 		}
