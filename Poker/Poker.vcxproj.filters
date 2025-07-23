@@ -24,12 +24,21 @@
     <ClCompile Include="combination_check.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hand_combinations.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hand_combinations.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="combination_check.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="action_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

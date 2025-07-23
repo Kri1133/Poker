@@ -128,10 +128,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="combination_check.cpp" />
+    <ClCompile Include="hand_combinations.cpp" />
+    <ClCompile Include="hand_combinations.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="player.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="action_utils.h" />
     <ClInclude Include="combination_check.h" />
     <ClInclude Include="player.h" />
   </ItemGroup>

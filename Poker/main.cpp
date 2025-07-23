@@ -4,7 +4,9 @@
 #include <ctime>
 #include <memory>
 #include "player.h"
+#include "hand_combinations.h"
 #include "combination_check.h"
+#include "action_utils.h"
 using namespace std;
 
 const int PLAYER_COUNT = 4;
@@ -59,10 +61,8 @@ void dealingCards(std::vector<std::unique_ptr<Player>>& players, vector<vector<s
 	}
 }
 
-bool checkCombinations(vector<vector<string>>& comCards, vector<vector<string>> hand)
+bool checkCombinations(vector<vector<string>> hand)
 {
-	// A copy vector of the hand is required as the community cards will be added to the hand
-	hand.insert(hand.end(), comCards.begin(), comCards.end());
 	if (isFlush(hand))
 	{
 
@@ -112,7 +112,7 @@ bool checkCombinations(vector<vector<string>>& comCards, vector<vector<string>> 
 	else
 	{
 		std::cout << "High Card!" << endl;
-		return true;
+		return false;
 	}
 }
 
@@ -154,63 +154,135 @@ int main()
 			bot->setBotName(botNames[i - 1]);
 		}
 	}
+	while (true) {
+		std::vector<std::vector<string>> shuffledDeck = shuffleCards(Deck);
 
-	std::vector<std::vector<string>> shuffledDeck = shuffleCards(Deck);
+		dealingCards(players, shuffledDeck);
 
-	dealingCards(players, shuffledDeck);
+		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2 * PLAYER_COUNT); // remove used cards
 
-	shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2 * PLAYER_COUNT); // remove used cards
-
-	for (auto i : players[0]->getHand()) {
-		std::cout << i[0] << " of " << i[1] << std::endl;
-	}
-	std::vector<std::vector<string>> communityCards;
-
-	// Dealing the flop
-	for (int i = 0; i < 3; i++)
-	{
-		communityCards.push_back(shuffledDeck[i]);
-	}
-
-	shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 3);
-
-	for (int i = 0; i < communityCards.size(); i++) {
-		std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
-	}
-
-	for (int i = 0; i < PLAYER_COUNT - 1; i++)
-	{
-		vector<vector<string>> cardsToPass = players[i]->getHand();
-		/*vector<vector<string>> test = { {"2", "Hearts" }, {"10", "Diamonds"} };
-		communityCards = { {"3", "Spades" }, {"5", "Clubs" }, {"8", "Hearts" } };*/
-		// Above used for testing purposes
-		checkCombinations(communityCards, cardsToPass);
-		players[i]->chooseAction();
-
-		// Action step must be added for the bots
-	}
-
-	// Dealing the turn
-	communityCards.push_back(shuffledDeck[0]);
-
-	shuffledDeck.erase(shuffledDeck.begin());
-
-	for (int i = 0; i < communityCards.size(); i++) {
-		std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
-	}
-
-	for (int i = 0; i < PLAYER_COUNT - 1; i++)
-	{
-		vector<vector<string>> cardsToPass = players[i]->getHand();
-		if (checkCombinations(communityCards, cardsToPass)) {
-			// Can be used to make a bet
+		for (auto i : players[0]->getHand()) {
+			std::cout << i[0] << " of " << i[1] << std::endl;
 		}
+		std::vector<std::vector<string>> communityCards;
+		int pot = 0;
+
+		// Dealing the flop
+		for (int i = 0; i < 3; i++)
+		{
+			communityCards.push_back(shuffledDeck[i]);
+		}
+
+		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 3);
+
+		std::cout << std::endl;
+
+		for (int i = 0; i < communityCards.size(); i++) {
+			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
+		}
+
+		std::cout << std::endl;
+
+		// First action step for the human player and bots
+		for (int i = 0; i < PLAYER_COUNT; i++)
+		{
+			vector<vector<string>> cardsToPass = players[i]->getHand();
+			/*vector<vector<string>> test = { {"2", "Hearts" }, {"10", "Diamonds"} };
+			communityCards = { {"3", "Spades" }, {"5", "Clubs" }, {"8", "Hearts" } };*/
+			// Above used for testing purposes
+			cardsToPass.insert(cardsToPass.end(), communityCards.begin(), communityCards.end());
+			string botAction = "";
+			if (players[i]->isBot()) {
+				if (checkCombinations(cardsToPass)) {
+					players[i]->raise(pot);
+					botAction = "raise";
+				}
+				else {
+					if (isGoodStartingHand(players[i]->getHand())) {
+						players[i]->call(pot);
+						botAction = "call";
+					}
+					else {
+						players[i]->fold();
+						botAction = "fold";
+					}
+				}
+				std::cout << players[i]->getName() << " chose: " << botAction << std::endl;
+			}
+			else {
+				players[i]->chooseAction(pot);
+			}
+		}
+		std::cout << "Pot: " << pot << std::endl;
+
+		// Dealing the turn
+		communityCards.push_back(shuffledDeck[0]);
+
+		shuffledDeck.erase(shuffledDeck.begin());
+
+		for (int i = 0; i < communityCards.size(); i++) {
+			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
+		}
+
+		// Second action step for the human player and bots
+		for (int i = 0; i < PLAYER_COUNT; i++)
+		{
+			vector<vector<string>> cardsToPass = players[i]->getHand();
+			cardsToPass.insert(cardsToPass.end(), communityCards.begin(), communityCards.end());
+			if (players[i]->isFolded()) {
+				continue;
+			}
+			auto combos = getAllFiveCardCombinations(cardsToPass);
+			if (players[i]->isBot()) {
+				bool goodCombo = false;
+				for (const auto& hand : combos) {
+					if (checkCombinations(cardsToPass)) {
+						goodCombo = true;
+						break;
+					}
+				}
+				if (goodCombo) {
+					players[i]->raise(pot);
+					std::cout << players[i]->getName() << " chose: Raise!" << std::endl;
+				}
+				else if (isGoodStartingHand(players[i]->getHand())) {
+					players[i]->call(pot);
+					std::cout << players[i]->getName() << " chose: Call!" << std::endl;
+				}
+				else {
+					players[i]->fold();
+					std::cout << players[i]->getName() << " chose: Fold!" << std::endl;
+				}
+				// call doesn't work for bots or human player
+			
+			}
+			else {
+				players[i]->chooseAction(pot);
+			}
+		}
+
+		// Dealing the river
+		communityCards.push_back(shuffledDeck[0]);
+
+		shuffledDeck.erase(shuffledDeck.begin());
+
+		for (int i = 0; i < communityCards.size(); i++) {
+			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
+		}
+
+		// Third action step for the human player and bots
+		for (int i = 0; i < PLAYER_COUNT; i++)
+		{
+			vector<vector<string>> cardsToPass = players[i]->getHand();
+			cardsToPass.insert(cardsToPass.end(), communityCards.begin(), communityCards.end());
+			if (players[i]->isFolded()) {
+				continue;
+			}
+			checkCombinations(cardsToPass);
+
+			// for bots: std::cout << player->getName() << " chose: " << stringFromAction(action) << std::endl;
+		}
+
 	}
-
-	// Dealing the river
-	communityCards.push_back(shuffledDeck[0]);
-
-	shuffledDeck.erase(shuffledDeck.begin());
-
 	return 0;
 }

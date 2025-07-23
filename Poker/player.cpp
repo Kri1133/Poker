@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "player.h"
+#include "action_utils.h"
 
 void Player::setName()
 {
@@ -23,6 +24,10 @@ int Player::getNumber()
 	return playerNumber;
 }
 
+bool Player::isFolded() {
+	return folded;
+}
+
 void Player::addCardToHand(std::vector<std::string> card)
 {
 	hand.push_back(card);
@@ -37,28 +42,31 @@ void botPlayer::setBotName(const std::string& newName)
 	this->name = newName;
 }
 
-Action Player::chooseAction()
+Action Player::chooseAction(int& pot)
 {
-	std::cout << "Your move (Fold/Bet/Raise/Call/AllIn): ";
-	std::string action;
-	std::cin >> action;
-	if (action == "Fold") {
-		return Action::Fold;
+	std::cout << "Your move (Fold/Bet/Raise/Call): ";
+	std::string input;
+	std::cin >> input;
+	try {
+		Action action = actionFromString(input);
+		switch (action) {
+		case Action::fold:
+			fold();
+			break;
+		case Action::bet:
+			bet(pot);
+			break;
+		case Action::raise:
+			raise(pot);
+			break;
+		case Action::call:
+			call(pot);
+			break;
+		}
+		return action;
 	}
-	else if (action == "Bet") {
-		Player::bet();
-		return Action::Bet;
-	}
-	else if (action == "Raise") {
-		Player::raise();
-		return Action::Raise;
-	}
-	else if (action == "Call") {
-		Player::call();
-		return Action::Call;
-	}
-	else if (action == "AllIn") {
-		return Action::AllIn;
+	catch (const std::invalid_argument&) {
+		std::cout << "Invalid action. Please type Fold, Bet, Raise, or Call.\n";
 	}
 }
 
@@ -67,13 +75,13 @@ void Player::fold()
 	folded = true;
 }
 
-void Player::bet() {
+void Player::bet(int& pot) {
 	int betAmount = 0;
 	std::cout << "Enter the amount you want to bet: ";
 	std::cin >> betAmount;
 	if (betAmount > chips) {
 		std::cout << "You don't have enough chips to bet that amount!" << std::endl;
-		Player::bet(); // Ask for bet again
+		Player::bet(pot); // Ask for bet again
 		return;
 	}
 	chips -= betAmount;
@@ -82,7 +90,7 @@ void Player::bet() {
 	std::cout << "You have bet " << betAmount << std::endl;
 }
 
-void Player::call()
+void Player::call(int& pot)
 {
 	if (currentBet >= chips) {
 		pot += chips;
@@ -95,7 +103,7 @@ void Player::call()
 	}
 }
 
-void Player::raise() {
+void Player::raise(int& pot) {
 	if (currentBet >= chips) {
 		std::cout << "You don't have enough chips to raise!" << std::endl;
 		std::cout << "You can only fold or go all in." << std::endl;
@@ -107,7 +115,7 @@ void Player::raise() {
 		}
 		else if (newAction == "call" || newAction == "allin")
 		{
-			Player::call();
+			Player::call(pot);
 			return;
 		}
 	}
@@ -118,12 +126,12 @@ void Player::raise() {
 		std::cin >> newAmount;
 		if (newAmount > chips) {
 			std::cout << "You don't have enough chips to raise!" << std::endl;
-			Player::raise();
+			Player::raise(pot);
 			return;
 		}
 		else if (newAmount <= currentBet) {
 			std::cout << "You have to raise more than " << currentBet << "." << std::endl;
-			Player::raise();
+			Player::raise(pot);
 			return;
 		}
 		chips -= newAmount;
@@ -132,8 +140,22 @@ void Player::raise() {
 	}
 }
 
-Action botPlayer::chooseAction()
+void botPlayer::raise(int& pot) {
+	if (currentBet >= chips) {
+		std::cout << "All In!!" << std::endl;
+	}
+	else
+	{
+		int newAmount = 500;
+		currentBet += newAmount; 
+		std::cout << "I raise the bet to " << currentBet << std::endl;
+		chips -= newAmount;
+		pot += currentBet;
+	}
+}
+
+Action botPlayer::chooseAction(int& pot)
 {
 	std::cout << "All In!" << std::endl;
-	return Action::Call;
+	return Action::call;
 }

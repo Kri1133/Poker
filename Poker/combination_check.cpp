@@ -153,19 +153,44 @@ bool isThreeOfaKind(std::vector<std::vector<std::string>>& hand) {
 // FUNCTION IS COMPLETED
 
 int isPair(std::vector<std::vector<std::string>>& hand) {
-	std::map<std::string, int> rankCount;
-	for (const auto& card : hand) {
-		rankCount[card[0]]++;
-	}
-	int pairCounter = 0;
-	for (const auto& pair : rankCount) {
-		if (pair.second == 2) {
-			pairCounter++;
+	int totalPairs = 0;
+	for (int i = 0; i < 2; i++) { // Only the first two cards are from the player's hand
+		for (int j = 2; j < hand.size(); j++) {
+			if (hand[i][0] == hand[j][0]) {
+				totalPairs++;
+			}
 		}
 	}
-
-	return pairCounter;
+	return totalPairs;
 };
+// FUNCTION IS COMPLETED
 
+int getValueFromRank(const std::string& rank) {
+	for (const auto& pair : rankMap) {
+		if (pair.second == rank) {
+			return pair.first;
+		}
+	}
+}
 
-bool isHighCard(std::vector<std::vector<std::string>>& hand);
+bool isGoodStartingHand(const std::vector<std::vector<std::string>>& hand)
+{
+	const std::string& rank1 = hand[0][0];
+	const std::string& suit1 = hand[0][1];
+	const std::string& rank2 = hand[1][0];
+	const std::string& suit2 = hand[1][1];
+
+	int v1 = getValueFromRank(rank1);
+	int v2 = getValueFromRank(rank2);
+
+	// Pair of any value is good
+	if (rank1 == rank2) return true;
+
+	// Both high cards (10 or higher)
+	if (v1 >= 10 && v2 >= 10) return true;
+
+	// Suited connectors 10 or above
+	if (suit1 == suit2 && std::abs(v1 - v2) == 1 && (v1 >= 10 || v2 >= 10)) return true;
+
+	return false;
+}
