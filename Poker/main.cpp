@@ -208,7 +208,7 @@ int main()
 		// First action step for the human player and bots
 		flopBettingRound(players, pot, communityCards, foldedPlayers);
 		std::cout << "Pot: " << pot << std::endl;
-
+		std::cout << "." << std::endl;
 		// Dealing the turn
 		communityCards.push_back(shuffledDeck[0]);
 

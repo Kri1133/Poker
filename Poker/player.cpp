@@ -3,6 +3,7 @@
 #include "player.h"
 #include "action_utils.h"
 #include "bettingRounds.h"
+#include "globals.h"
 
 void Player::setName()
 {
@@ -116,7 +117,6 @@ void Player::call(int& pot, int& currentBet)
 void Player::raise(int& pot, int& currentBet) {
 	if (currentBet >= chips) {
 		std::cout << "You don't have enough chips to raise!" << std::endl;
-		std::cout << "You can only fold or go all in." << std::endl;
 		std::string newAction;
 		std::cin >> newAction;
 		if (newAction == "fold") {
@@ -133,22 +133,29 @@ void Player::raise(int& pot, int& currentBet) {
 	else
 	{
 		int newAmount = 0;
-		std::cout << "I raise the bet to " << newAmount << std::endl;
+		std::cout << "Enter the amount you want to raise: ";
 		std::cin >> newAmount;
-		if (newAmount > chips) {
-			std::cout << "You don't have enough chips to raise!" << std::endl;
-			Player::raise(pot, currentBet);
-			return;
-		}
-		else if (newAmount <= currentBet) {
-			std::cout << "You have to raise more than " << currentBet << "." << std::endl;
-			Player::raise(pot, currentBet);
-			return;
+		bool enough = false;
+		while (!enough) {
+			if (newAmount > chips) {
+				std::cout << "You don't have enough chips to raise!" << std::endl;
+				std::cout << "Enter again: ";
+				std::cin >> newAmount;
+				continue;
+			}
+			else if (newAmount <= currentBet) {
+				std::cout << "You have to raise more than " << currentBet << "." << std::endl;
+				std::cout << "Enter again: ";
+				std::cin >> newAmount;
+				continue;
+			}
+			enough = true;
 		}
 		chips -= newAmount;
 		currentBet = newAmount;
 		pot += newAmount;
 	}
+	bettingDone = false;
 }
 
 void botPlayer::raise(int& pot, int& currentBet) {
@@ -160,13 +167,13 @@ void botPlayer::raise(int& pot, int& currentBet) {
 	else
 	{
 		srand(time(0));
-		int newAmount = ((rand() % 7) + 1)*100;
+		int newAmount = ((rand() % 7) + 1) * 100;
 		currentBet += newAmount;
 		std::cout << name << " raises the bet to " << currentBet << std::endl;
 		chips -= newAmount;
 		pot += currentBet;
-		
 	}
+	bettingDone = false;
 }
 
 void botPlayer::makeManiac() {

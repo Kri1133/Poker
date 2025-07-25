@@ -52,4 +52,5 @@ public:
 	bool returnIsManiac();
 	bool hasRaised() const { return hasRaisedFlag; }
 	void setHasRaised() { hasRaisedFlag = true; }
+	void undoSetHasRaised() { hasRaisedFlag = false; }
 };
