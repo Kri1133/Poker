@@ -3,17 +3,21 @@
 #include <algorithm>
 #include <ctime>
 #include <memory>
+#include <thread>
+#include <chrono>
 #include "player.h"
 #include "hand_combinations.h"
 #include "combination_check.h"
 #include "action_utils.h"
+#include "bettingRounds.h"
+#include "globals.h"
 using namespace std;
-
-const int PLAYER_COUNT = 4;
 
 /*Player count must not be > 10
 Otherwise bad things will happen
 Or so I was told*/
+
+// If you get LNK2019 error rebuild the project(right-click on project and select rebuild)
 
 std::vector<std::vector<string>> shuffleCards(string Deck[52][2])
 {
@@ -116,6 +120,19 @@ bool checkCombinations(vector<vector<string>> hand)
 	}
 }
 
+void generateManiacs(std::vector<std::unique_ptr<Player>>& players) {
+	srand(time(0));
+	int numberOfManiacs = rand() % PLAYER_COUNT;
+	std::cout << "Number of maniacs: " << numberOfManiacs << std::endl;
+	for (int i = 0; i < numberOfManiacs; i++) {
+		int randomIndex = rand() % (PLAYER_COUNT - 1); // Exclude the human player at index 0
+		botPlayer* bot = dynamic_cast<botPlayer*>(players[randomIndex].get());
+		if (bot) {
+			bot->makeManiac(); // Set the bot as a maniac
+		}
+	}
+}
+
 int main()
 {
 	std::cout << "Hello World" << endl;
@@ -139,7 +156,7 @@ int main()
 	Player you;
 	vector<botPlayer> bots(PLAYER_COUNT - 1);
 	vector<unique_ptr<Player>> players; // Using smart pointers to delete the pointer automatically at the end
-	string botNames[3] = { "Amigo 1", "Mikey Mouse", "Darth Vader" };
+	string botNames[3] = { "Amigo 1", "Mickey Mouse", "Darth Vader" };
 
 	players.push_back(std::make_unique<Player>()); // Human player
 	for (int i = 0; i < PLAYER_COUNT - 1; i++) {
@@ -154,8 +171,12 @@ int main()
 			bot->setBotName(botNames[i - 1]);
 		}
 	}
+
 	while (true) {
 		std::vector<std::vector<string>> shuffledDeck = shuffleCards(Deck);
+
+		int foldedPlayers = 0;
+		int pot = 0;
 
 		dealingCards(players, shuffledDeck);
 
@@ -165,8 +186,7 @@ int main()
 			std::cout << i[0] << " of " << i[1] << std::endl;
 		}
 		std::vector<std::vector<string>> communityCards;
-		int pot = 0;
-
+		
 		// Dealing the flop
 		for (int i = 0; i < 3; i++)
 		{
@@ -183,36 +203,10 @@ int main()
 
 		std::cout << std::endl;
 
+		generateManiacs(players); // Randomly generate maniacs among the bots
+
 		// First action step for the human player and bots
-		for (int i = 0; i < PLAYER_COUNT; i++)
-		{
-			vector<vector<string>> cardsToPass = players[i]->getHand();
-			/*vector<vector<string>> test = { {"2", "Hearts" }, {"10", "Diamonds"} };
-			communityCards = { {"3", "Spades" }, {"5", "Clubs" }, {"8", "Hearts" } };*/
-			// Above used for testing purposes
-			cardsToPass.insert(cardsToPass.end(), communityCards.begin(), communityCards.end());
-			string botAction = "";
-			if (players[i]->isBot()) {
-				if (checkCombinations(cardsToPass)) {
-					players[i]->raise(pot);
-					botAction = "raise";
-				}
-				else {
-					if (isGoodStartingHand(players[i]->getHand())) {
-						players[i]->call(pot);
-						botAction = "call";
-					}
-					else {
-						players[i]->fold();
-						botAction = "fold";
-					}
-				}
-				std::cout << players[i]->getName() << " chose: " << botAction << std::endl;
-			}
-			else {
-				players[i]->chooseAction(pot);
-			}
-		}
+		flopBettingRound(players, pot, communityCards, foldedPlayers);
 		std::cout << "Pot: " << pot << std::endl;
 
 		// Dealing the turn
@@ -225,41 +219,9 @@ int main()
 		}
 
 		// Second action step for the human player and bots
-		for (int i = 0; i < PLAYER_COUNT; i++)
-		{
-			vector<vector<string>> cardsToPass = players[i]->getHand();
-			cardsToPass.insert(cardsToPass.end(), communityCards.begin(), communityCards.end());
-			if (players[i]->isFolded()) {
-				continue;
-			}
-			auto combos = getAllFiveCardCombinations(cardsToPass);
-			if (players[i]->isBot()) {
-				bool goodCombo = false;
-				for (const auto& hand : combos) {
-					if (checkCombinations(cardsToPass)) {
-						goodCombo = true;
-						break;
-					}
-				}
-				if (goodCombo) {
-					players[i]->raise(pot);
-					std::cout << players[i]->getName() << " chose: Raise!" << std::endl;
-				}
-				else if (isGoodStartingHand(players[i]->getHand())) {
-					players[i]->call(pot);
-					std::cout << players[i]->getName() << " chose: Call!" << std::endl;
-				}
-				else {
-					players[i]->fold();
-					std::cout << players[i]->getName() << " chose: Fold!" << std::endl;
-				}
-				// call doesn't work for bots or human player
-			
-			}
-			else {
-				players[i]->chooseAction(pot);
-			}
-		}
+		currentBet = 0;
+
+		std::cout << "Pot: " << pot << std::endl;
 
 		// Dealing the river
 		communityCards.push_back(shuffledDeck[0]);
@@ -271,6 +233,7 @@ int main()
 		}
 
 		// Third action step for the human player and bots
+		currentBet = 0;
 		for (int i = 0; i < PLAYER_COUNT; i++)
 		{
 			vector<vector<string>> cardsToPass = players[i]->getHand();
@@ -281,8 +244,9 @@ int main()
 			checkCombinations(cardsToPass);
 
 			// for bots: std::cout << player->getName() << " chose: " << stringFromAction(action) << std::endl;
-		}
 
+			std::this_thread::sleep_for(std::chrono::milliseconds(1200)); // 1.2 seconds
+		}
 	}
 	return 0;
 }
