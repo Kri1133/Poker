@@ -6,11 +6,12 @@
 #include <thread>
 #include <chrono>
 #include "player.h"
-#include "hand_combinations.h"
-#include "combination_check.h"
-#include "action_utils.h"
+#include "handCombinations.h"
+#include "combinationCheck.h"
+#include "actionUtils.h"
 #include "bettingRounds.h"
 #include "globals.h"
+#include "getWinner.h"
 using namespace std;
 
 /*Player count must not be > 10
@@ -65,57 +66,58 @@ void dealingCards(std::vector<std::unique_ptr<Player>>& players, vector<vector<s
 	}
 }
 
-bool checkCombinations(vector<vector<string>> hand)
+bool checkCombinations(std::vector<std::unique_ptr<Player>>& players, 
+	vector<vector<string>> hand, int i)
 {
 	if (isFlush(hand))
 	{
 
 		if (isRoyalFlush(hand)) {
-			std::cout << "Royal Flush!" << endl;
+			players[i]->setHighestCombination("Royal Flush");
 			return true;
 		}
 		else if (isStraight(hand)) {
-			std::cout << "Straight Flush!" << endl;
+			players[i]->setHighestCombination("Straight Flush"); 
 			return true;
 		}
 		else {
-			std::cout << "Flush!" << endl;
+			players[i]->setHighestCombination("Flush");
 			return true;
 		}
 	}
 	else if (isFourOfaKind(hand))
 	{
-		std::cout << "Four of a Kind!" << endl;
+		players[i]->setHighestCombination("Four of a Kind");
 		return true;
 	}
 	else if (isFullHouse(hand))
 	{
-		std::cout << "Full House!" << endl;
+		players[i]->setHighestCombination("Full House");
 		return true;
 	}
 	else if (isStraight(hand))
 	{
-		std::cout << "Straight!" << endl;
+		players[i]->setHighestCombination("Straight");
 		return true;
 	}
 	else if (isThreeOfaKind(hand)) // isThreeOfaKind must be checked after isFullHouse
 	{
-		std::cout << "Three of a Kind!" << endl;
+		players[i]->setHighestCombination("Three of a Kind");
 		return true;
 	}
 	else if (isPair(hand) == 1)
 	{
-		std::cout << "Pair!" << endl;
+		players[i]->setHighestCombination("One Pair");
 		return true;
 	}
 	else if (isPair(hand) == 2)
 	{
-		std::cout << "Two Pair!" << endl;
+		players[i]->setHighestCombination("Two Pair");
 		return true;
 	}
 	else
 	{
-		std::cout << "High Card!" << endl;
+		players[i]->setHighestCombination("High Card");
 		return false;
 	}
 }
@@ -164,6 +166,7 @@ int main()
 	}
 
 	players[0]->setName();
+	std::cout << "Welcome back, " << players[0]->getName() << std::endl;
 	for (int i = 1; i < PLAYER_COUNT; i++) {
 		botPlayer* bot = dynamic_cast<botPlayer*>(players[i].get());
 		if (bot) {
@@ -181,12 +184,16 @@ int main()
 		dealingCards(players, shuffledDeck);
 
 		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2 * PLAYER_COUNT); // remove used cards
-
-		for (auto i : players[0]->getHand()) {
-			std::cout << i[0] << " of " << i[1] << std::endl;
+		
+		for (int j = 0; j < PLAYER_COUNT; j++)
+		{
+			for (auto i : players[j]->getHand()) {
+				std::cout << players[j]->getName() << "'s card: ";
+				std::cout << i[0] << " of " << i[1] << std::endl;
+			}
 		}
 		std::vector<std::vector<string>> communityCards;
-		
+
 		// Dealing the flop
 		for (int i = 0; i < 3; i++)
 		{
@@ -207,8 +214,7 @@ int main()
 
 		// First action step for the human player and bots
 		flopBettingRound(players, pot, communityCards, foldedPlayers);
-		std::cout << "Pot: " << pot << std::endl;
-		std::cout << "." << std::endl;
+		
 		// Dealing the turn
 		communityCards.push_back(shuffledDeck[0]);
 
@@ -220,6 +226,7 @@ int main()
 
 		// Second action step for the human player and bots
 		currentBet = 0;
+		flopBettingRound(players, pot, communityCards, foldedPlayers);
 
 		std::cout << "Pot: " << pot << std::endl;
 
@@ -234,18 +241,30 @@ int main()
 
 		// Third action step for the human player and bots
 		currentBet = 0;
-		for (int i = 0; i < PLAYER_COUNT; i++)
-		{
-			vector<vector<string>> cardsToPass = players[i]->getHand();
-			cardsToPass.insert(cardsToPass.end(), communityCards.begin(), communityCards.end());
-			if (players[i]->isFolded()) {
+		flopBettingRound(players, pot, communityCards, foldedPlayers);
+
+		getWinner(players, pot, communityCards, foldedPlayers);
+
+		// Reseting for next round
+		for (int i = 0; i < PLAYER_COUNT; i++) {
+			std::cout << players[i]->getName() << "'s finances: " << players[i]->getChips();
+			std::cout << std::endl;
+			players[i]->getChips();
+			if (players[i]->getChips() == 0) {
+				players[i]->setIsBusted();
+				std::cout << players[i]->getName() << " is busted!" << std::endl;
 				continue;
 			}
-			checkCombinations(cardsToPass);
-
-			// for bots: std::cout << player->getName() << " chose: " << stringFromAction(action) << std::endl;
-
-			std::this_thread::sleep_for(std::chrono::milliseconds(1200)); // 1.2 seconds
+			players[i]->resetHighestCombination();
+			players[i]->resetIsAllIn();
+			players[i]->resetIsFolded();
+			players[i]->resetHand();
+			players[i]->resetIsWinner();
+			botPlayer* bot = dynamic_cast<botPlayer*>(players[i].get());
+			if (bot) {
+				bot->resetIsManiac();
+				bot->resetHasRaised();
+			}
 		}
 	}
 	return 0;

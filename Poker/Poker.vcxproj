@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,17 +129,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bettingRounds.cpp" />
-    <ClCompile Include="combination_check.cpp" />
+    <ClCompile Include="combinationCheck.cpp" />
+    <ClCompile Include="getWinner.cpp" />
+    <ClCompile Include="getWinner.h" />
     <ClCompile Include="globals.cpp" />
-    <ClCompile Include="hand_combinations.cpp" />
-    <ClCompile Include="hand_combinations.h" />
+    <ClCompile Include="handCombinations.cpp" />
+    <ClCompile Include="handCombinations.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="player.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="action_utils.h" />
+    <ClInclude Include="actionUtils.h" />
     <ClInclude Include="bettingRounds.h" />
-    <ClInclude Include="combination_check.h" />
+    <ClInclude Include="combinationCheck.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="player.h" />
   </ItemGroup>

@@ -3,12 +3,11 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-#include "combination_check.h"
+#include "combinationCheck.h"
+#include "globals.h"
 
 // In this file hand represents the concatenated vectors of the player's hand
 // and the community cards
-
-static std::map<int, std::string> rankMap = { {2, "2"}, {3, "3"}, {4, "4"}, {5, "5"}, {6, "6"}, {7, "7"}, {8, "8"},{9, "9"}, {10, "10"}, {11, "Jack"}, {12, "Queen"}, {13, "King"}, {14, "Ace"} };
 
 bool cmp(std::pair<std::string, int>& a, std::pair<std::string, int>& b)
 {
@@ -193,4 +192,18 @@ bool isGoodStartingHand(const std::vector<std::vector<std::string>>& hand)
 	if (suit1 == suit2 && std::abs(v1 - v2) == 1 && (v1 >= 10 || v2 >= 10)) return true;
 
 	return false;
+}
+
+std::string getCombinationName(const std::vector<std::vector<std::string>>& hand) {
+	std::vector<std::vector<std::string>> bruh = hand;
+	if (isRoyalFlush(bruh))    return "Royal Flush";
+	if (isStraight(bruh) && isFlush(bruh)) return "Straight Flush";
+	if (isFourOfaKind(bruh))   return "Four of a Kind";
+	if (isFullHouse(bruh))     return "Full House";
+	if (isFlush(bruh))         return "Flush";
+	if (isStraight(bruh))      return "Straight";
+	if (isThreeOfaKind(bruh))  return "Three of a Kind";
+	if (isPair(bruh) == 2)     return "Two Pair";
+	if (isPair(bruh) == 1)     return "One Pair";
+	return "High Card";
 }

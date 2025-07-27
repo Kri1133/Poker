@@ -21,13 +21,13 @@
     <ClCompile Include="player.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="combination_check.cpp">
+    <ClCompile Include="combinationCheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hand_combinations.h">
+    <ClCompile Include="handCombinations.h">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="hand_combinations.cpp">
+    <ClCompile Include="handCombinations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="bettingRounds.cpp">
@@ -36,15 +36,21 @@
     <ClCompile Include="globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="getWinner.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="getWinner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="combination_check.h">
+    <ClInclude Include="combinationCheck.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="action_utils.h">
+    <ClInclude Include="actionUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bettingRounds.h">

@@ -12,3 +12,4 @@ bool isThreeOfaKind(std::vector<std::vector<std::string>>& hand);
 int isPair(std::vector<std::vector<std::string>>& hand);
 int getValueFromRank(const std::string& rank);
 bool isGoodStartingHand(const std::vector<std::vector<std::string>>& hand);
+std::string getCombinationName(const std::vector<std::vector<std::string>>& hand);
