@@ -44,7 +44,6 @@ public:
 	bool returnIsWinner() const { return isWinner; }
 	void resetIsWinner() { isWinner = false; }
 	void setIsBusted() { isBusted = true; }
-	void resetIsBusted() { isBusted = false; }
 	bool returnIsBusted() const { return isBusted; }
 	void resetIsFolded() { folded = false; }
 	int getChips() const { return chips; }
@@ -57,7 +56,7 @@ public:
 	void resetHand() { hand.clear(); }
 	std::vector<std::vector<std::string>> getHand();
 	std::vector<std::vector<std::string>> getBestFiveCardHand(std::vector<std::vector<std::string>>& communityCards);
-	virtual Action chooseAction(int& bet); // virtual function to allow derived classes to implement their own action logic (override it))
+	virtual Action chooseAction(); // virtual function to allow derived classes to implement their own action logic (override it))
 
 	void fold();
 	void bet();

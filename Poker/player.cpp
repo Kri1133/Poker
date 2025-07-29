@@ -16,7 +16,7 @@ void Player::addCardToHand(std::vector<std::string> card) { hand.push_back(card)
 std::vector<std::vector<std::string>> Player::getHand() { return hand; }
 void botPlayer::setBotName(const std::string& newName) { this->name = newName; }
 
-Action Player::chooseAction(int& currentBet) {
+Action Player::chooseAction() {
 	std::cout << "Your move (Fold/Bet/Raise/Call): ";
 	std::string input;
 	std::cin >> input;
@@ -64,6 +64,7 @@ void Player::bet() {
 		else {
 			chips -= amount;
 			amountAlreadyPut += amount;
+			currentBet = amount;
 			break;
 		}
 	}
@@ -146,7 +147,7 @@ void botPlayer::raise() {
 	else {
 		srand(time(0));
 		int newAmount = ((rand() % 7) + 1) * 100;
-		int targetBet = currentBet + newAmount;
+		int targetBet = newAmount + currentBet;
 		std::cout << name << " raises the bet to " << targetBet << std::endl;
 		chips -= newAmount;
 		amountAlreadyPut = targetBet;

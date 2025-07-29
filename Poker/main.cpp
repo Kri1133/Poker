@@ -192,10 +192,12 @@ int main()
 			players[i]->resetHand();
 			players[i]->resetAmountAlreadyPut();
 			players[i]->resetIsAllIn();
-			players[i]->setIsWinner();
+			players[i]->resetIsWinner();
 			players[i]->resetFolded();
-			players[i]->resetIsBusted();
 		}
+
+		generateManiacs(players);
+
 		dealingCards(players, shuffledDeck);
 		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2*PLAYER_COUNT);
 		for (int i = 0; i < PLAYER_COUNT; i++) {
