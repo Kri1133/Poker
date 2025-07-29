@@ -7,11 +7,5 @@
 #include "handCombinations.h"
 #include "combinationCheck.h"
 
-void flopBettingRound(std::vector<std::unique_ptr<Player>>& players, int& pot,
-	std::vector<std::vector<std::string>>& communityCards, int& foldedPlayers);
-
-void turnBettingRound(std::vector<std::unique_ptr<Player>>& players, int& pot,
-	std::vector<std::vector<std::string>>& communityCards, int& foldedPlayers);
-
-void riverBettingRound(std::vector<std::unique_ptr<Player>>& players, int& pot,
+void BettingRound(std::vector<std::unique_ptr<Player>>& players, int& pot,
 	std::vector<std::vector<std::string>>& communityCards, int& foldedPlayers);

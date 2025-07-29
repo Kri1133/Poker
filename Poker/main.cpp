@@ -175,97 +175,83 @@ int main()
 		}
 	}
 
+	std::vector < std::vector<std::string> > communityCards;
+	std::vector<std::vector<std::string>> shuffledDeck;
+	int foldedPlayers = 0;
+	int pot = 0;
+
 	while (true) {
-		std::vector<std::vector<string>> shuffledDeck = shuffleCards(Deck);
+		// Reset round variables
+		communityCards.clear();
+		foldedPlayers = 0;
+		pot = 0;
 
-		int foldedPlayers = 0;
-		int pot = 0;
-
+		// Shuffle and deal new hands
+		shuffledDeck = shuffleCards(Deck);
+		for (int i = 0; i < PLAYER_COUNT; i++) {
+			players[i]->resetHand();
+			players[i]->resetAmountAlreadyPut();
+			players[i]->resetIsAllIn();
+			players[i]->setIsWinner();
+			players[i]->resetFolded();
+			players[i]->resetIsBusted();
+		}
 		dealingCards(players, shuffledDeck);
-
-		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2 * PLAYER_COUNT); // remove used cards
-		
-		for (int j = 0; j < PLAYER_COUNT; j++)
-		{
-			for (auto i : players[j]->getHand()) {
-				std::cout << players[j]->getName() << "'s card: ";
-				std::cout << i[0] << " of " << i[1] << std::endl;
-			}
-		}
-		std::vector<std::vector<string>> communityCards;
-
-		// Dealing the flop
-		for (int i = 0; i < 3; i++)
-		{
-			communityCards.push_back(shuffledDeck[i]);
+		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2*PLAYER_COUNT);
+		for (int i = 0; i < PLAYER_COUNT; i++) {
+			std::cout << players[i]->getName() << "'s card: " << players[i]->getHand()[0][0]
+				<< " of " << players[i]->getHand()[0][1] << std::endl;
+			std::cout << players[i]->getName() << "'s card: " << players[i]->getHand()[1][0]
+				<< " of " << players[i]->getHand()[1][1] << std::endl;
 		}
 
-		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 3);
-
-		std::cout << std::endl;
-
+		// Deal flop
+		for (int i = 0; i < 3; i++) {
+			communityCards.push_back(shuffledDeck[0]);
+			shuffledDeck.erase(shuffledDeck.begin());
+		}
 		for (int i = 0; i < communityCards.size(); i++) {
-			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
+			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0]
+				<< " of " << communityCards[i][1] << std::endl;
 		}
 
+		// --------- Betting Rounds ----------
+		// Pre-turn betting round (after flop)
 		std::cout << std::endl;
-
-		generateManiacs(players); // Randomly generate maniacs among the bots
-
-		// First action step for the human player and bots
-		flopBettingRound(players, pot, communityCards, foldedPlayers);
-		
-		// Dealing the turn
-		communityCards.push_back(shuffledDeck[0]);
-
-		shuffledDeck.erase(shuffledDeck.begin());
-
-		for (int i = 0; i < communityCards.size(); i++) {
-			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
-		}
-
-		// Second action step for the human player and bots
-		currentBet = 0;
-		flopBettingRound(players, pot, communityCards, foldedPlayers);
-
+		BettingRound(players, pot, communityCards, foldedPlayers);
 		std::cout << "Pot: " << pot << std::endl;
 
-		// Dealing the river
+		// Turn
+		std::cout << std::endl;
 		communityCards.push_back(shuffledDeck[0]);
-
 		shuffledDeck.erase(shuffledDeck.begin());
-
 		for (int i = 0; i < communityCards.size(); i++) {
-			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0] << " of " << communityCards[i][1] << endl;
+			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0]
+				<< " of " << communityCards[i][1] << std::endl;
 		}
+		BettingRound(players, pot, communityCards, foldedPlayers);
+		std::cout << "Pot: " << pot << std::endl;
 
-		// Third action step for the human player and bots
-		currentBet = 0;
-		flopBettingRound(players, pot, communityCards, foldedPlayers);
 
+		// River
+		std::cout << std::endl;
+		communityCards.push_back(shuffledDeck[0]);
+		shuffledDeck.erase(shuffledDeck.begin());
+		for (int i = 0; i < communityCards.size(); i++) {
+			std::cout << "Community Card " << i + 1 << ": " << communityCards[i][0]
+				<< " of " << communityCards[i][1] << std::endl;
+		}
+		BettingRound(players, pot, communityCards, foldedPlayers);
+		std::cout << "Pot: " << pot << std::endl;
+
+		// --------- End of Hand ----------
 		getWinner(players, pot, communityCards, foldedPlayers);
 
-		// Reseting for next round
+		// Show player finances
 		for (int i = 0; i < PLAYER_COUNT; i++) {
-			std::cout << players[i]->getName() << "'s finances: " << players[i]->getChips();
-			std::cout << std::endl;
-			players[i]->getChips();
-			if (players[i]->getChips() == 0) {
-				players[i]->setIsBusted();
-				std::cout << players[i]->getName() << " is busted!" << std::endl;
-				continue;
-			}
-			players[i]->resetHighestCombination();
-			players[i]->resetIsAllIn();
-			players[i]->resetIsFolded();
-			players[i]->resetHand();
-			players[i]->resetIsWinner();
-			botPlayer* bot = dynamic_cast<botPlayer*>(players[i].get());
-			if (bot) {
-				bot->resetIsManiac();
-				bot->resetHasRaised();
-			}
+			std::cout << players[i]->getName() << "'s finances: " << players[i]->getChips() << std::endl;
 		}
 	}
+
 	return 0;
 }
