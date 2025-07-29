@@ -125,7 +125,6 @@ bool checkCombinations(std::vector<std::unique_ptr<Player>>& players,
 void generateManiacs(std::vector<std::unique_ptr<Player>>& players) {
 	srand(time(0));
 	int numberOfManiacs = rand() % PLAYER_COUNT;
-	std::cout << "Number of maniacs: " << numberOfManiacs << std::endl;
 	for (int i = 0; i < numberOfManiacs; i++) {
 		int randomIndex = rand() % (PLAYER_COUNT - 1); // Exclude the human player at index 0
 		botPlayer* bot = dynamic_cast<botPlayer*>(players[randomIndex].get());
@@ -193,19 +192,25 @@ int main()
 			players[i]->resetAmountAlreadyPut();
 			players[i]->resetIsAllIn();
 			players[i]->resetIsWinner();
-			players[i]->resetFolded();
+			players[i]->resetIsFolded();
 		}
 
 		generateManiacs(players);
 
 		dealingCards(players, shuffledDeck);
 		shuffledDeck.erase(shuffledDeck.begin(), shuffledDeck.begin() + 2*PLAYER_COUNT);
-		for (int i = 0; i < PLAYER_COUNT; i++) {
+		for (int i = 0; i < 1; i++) {
 			std::cout << players[i]->getName() << "'s card: " << players[i]->getHand()[0][0]
 				<< " of " << players[i]->getHand()[0][1] << std::endl;
 			std::cout << players[i]->getName() << "'s card: " << players[i]->getHand()[1][0]
 				<< " of " << players[i]->getHand()[1][1] << std::endl;
 		}
+		/*for (int i = 0; i < PLAYER_COUNT; i++) {
+			std::cout << players[i]->getName() << "'s card: " << players[i]->getHand()[0][0]
+				<< " of " << players[i]->getHand()[0][1] << std::endl;
+			std::cout << players[i]->getName() << "'s card: " << players[i]->getHand()[1][0]
+				<< " of " << players[i]->getHand()[1][1] << std::endl;
+		}*/
 
 		// Deal flop
 		for (int i = 0; i < 3; i++) {

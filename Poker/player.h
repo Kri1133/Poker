@@ -39,13 +39,13 @@ public:
 	std::string getHighestCombination() const { return highestCombination; }
 	void resetHighestCombination() { highestCombination = ""; }
 	bool isFolded();
-	void resetFolded() { folded = false; }
+	void setFolded() { folded = true; }
+	void resetIsFolded() { folded = false; }
 	void setIsWinner() { isWinner = true; }
 	bool returnIsWinner() const { return isWinner; }
 	void resetIsWinner() { isWinner = false; }
 	void setIsBusted() { isBusted = true; }
 	bool returnIsBusted() const { return isBusted; }
-	void resetIsFolded() { folded = false; }
 	int getChips() const { return chips; }
 	void setChips(int amount) { chips = amount; }
 	bool getIsAllIn() const { return isAllIn; }
